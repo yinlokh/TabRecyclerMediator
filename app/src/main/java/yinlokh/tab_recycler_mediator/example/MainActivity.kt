@@ -41,8 +41,8 @@ class MainActivity : AppCompatActivity() {
             tab_layout.addTab(tab_layout.newTab().setText(i.toString()))
         }
 
-        val mediator = TabRecyclerMediator(recycler, tab_layout)
-        mediator.listener = object : TabRecyclerMediator.Listener {
+        val mediator = TabRecyclerMediator()
+        val listener = object : TabRecyclerMediator.Listener {
             override fun getRecyclerPositionForTab(tab: Int): Int {
                 return tab * 3
             }
@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity() {
                 return pos / 3
             }
         }
+        mediator.attach(tab_layout, recycler, listener)
     }
 
     class Holder(itemView : View) : RecyclerView.ViewHolder(itemView) {

@@ -8,20 +8,17 @@ Listener provides mapping between tab position and recycler position.
 
 ### Example
 ```kotlin
-// add decoration to recycler
-recycler.addItemDecoration(decoration)
-
-// add header adapter to decoration
- val mediator = TabRecyclerMediator(recycler, tab_layout)
-        mediator.listener = object : TabRecyclerMediator.Listener {
-            override fun getRecyclerPositionForTab(tab: Int): Int {
-                return tab * 3
-            }
-
-            override fun getTabForRecyclerPosition(pos: Int): Int {
-                return pos / 3
-            }
+    val mediator = TabRecyclerMediator()
+    val listener = object : TabRecyclerMediator.Listener {
+        override fun getRecyclerPositionForTab(tab: Int): Int {
+            return tab * 3
         }
+    
+        override fun getTabForRecyclerPosition(pos: Int): Int {
+            return pos / 3
+        }
+    }
+    mediator.attach(tab_layout, recycler, listener)
 ```
 
 # License

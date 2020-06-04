@@ -21,29 +21,42 @@ import androidx.recyclerview.widget.LinearSmoothScroller
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.tabs.TabLayout
 
-class TabRecyclerMediator (
-    private val recycler : RecyclerView,
-    private val tabLayout : TabLayout) : TabLayout.OnTabSelectedListener, RecyclerView.OnScrollListener() {
+class TabRecyclerMediator () : TabLayout.OnTabSelectedListener, RecyclerView.OnScrollListener() {
 
-    var listener : Listener? = null
+    private var listener : Listener? = null
 
+    private var currentTab = 0
     private var linearLayoutManager : LinearLayoutManager? = null
     private var previousScrollState = RecyclerView.SCROLL_STATE_IDLE
     private var ignoreTabSelection = false
-    private var currentTab = 0
-    private val smoothScroller : LinearSmoothScroller
+    private var recyclerView : RecyclerView? = null
+    private var smoothScroller : LinearSmoothScroller? = null
     private var smoothScrolling = false
+    private var tabLayout : TabLayout? = null
 
-    init {
-        linearLayoutManager = recycler.layoutManager as? LinearLayoutManager
-        smoothScroller = object : LinearSmoothScroller(recycler.context) {
+    fun attach(tabLayout: TabLayout, recyclerView: RecyclerView, listener : Listener) {
+        this.recyclerView = recyclerView
+        this.tabLayout = tabLayout
+        this.listener = listener
+
+        linearLayoutManager = recyclerView.layoutManager as? LinearLayoutManager
+        smoothScroller = object : LinearSmoothScroller(recyclerView.context) {
             override fun getVerticalSnapPreference(): Int {
                 return SNAP_TO_START
             }
         }
 
         tabLayout.addOnTabSelectedListener(this)
-        recycler.addOnScrollListener(this)
+        recyclerView.addOnScrollListener(this)
+    }
+
+    fun detach() {
+        recyclerView?.removeOnScrollListener(this)
+        recyclerView = null
+        tabLayout?.removeOnTabSelectedListener(this)
+        tabLayout = null
+        linearLayoutManager = null
+        smoothScroller = null
     }
 
     override fun onTabReselected(tab: TabLayout.Tab?) { }
@@ -54,7 +67,7 @@ class TabRecyclerMediator (
         if (tab != null && !smoothScrolling && !ignoreTabSelection) {
             var recyclerPosition =  listener?.getRecyclerPositionForTab(tab.position)
             if (recyclerPosition != null) {
-                smoothScroller.targetPosition = recyclerPosition
+                smoothScroller?.targetPosition = recyclerPosition
                 linearLayoutManager?.startSmoothScroll(smoothScroller)
             }
         }
@@ -62,9 +75,12 @@ class TabRecyclerMediator (
 
     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
         when (newState) {
+
             RecyclerView.SCROLL_STATE_SETTLING ->
                 smoothScrolling = previousScrollState == RecyclerView.SCROLL_STATE_IDLE
+
             RecyclerView.SCROLL_STATE_DRAGGING ->  smoothScrolling = false
+
             RecyclerView.SCROLL_STATE_IDLE -> smoothScrolling = false
         }
 
@@ -80,7 +96,7 @@ class TabRecyclerMediator (
             // tablayout synchronously dispatches tab selection to listener
             if (!smoothScrolling) {
                 ignoreTabSelection = true
-                tabLayout.selectTab(tabLayout.getTabAt(newTab))
+                tabLayout?.selectTab(tabLayout?.getTabAt(newTab))
                 ignoreTabSelection = false
             }
         }
