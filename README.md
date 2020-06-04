@@ -1,13 +1,10 @@
-# StickyHeaderDecoration
-RecyclerView ItemDecoration to show sticky headers on vertical scrolling lists.
-Headers are provided using ViewHolders with support for recycling back to view pool and mixed
-header types.
-
-![Sticky Header Demo](stickyheader.gif)
+# TabRecyclerMediator
+Mediator for syncing between a tab layout and a vertical / horizontal scrolling RecyclerView.
 
 ## Usage
-Add StickyHeaderDecoration.kt to your project, provide an adapter implementing HeaderAdapter which
-has similar pattern to the one for RecyclerViewAdapter.
+Add TabRecyclerMediator.kt to project, set TabLayout and RecyclerView.  
+RecyclerView must have a LinearLayoutManager.
+Listener provides mapping between tab position and recycler position.
 
 ### Example
 ```kotlin
@@ -15,42 +12,16 @@ has similar pattern to the one for RecyclerViewAdapter.
 recycler.addItemDecoration(decoration)
 
 // add header adapter to decoration
-decoration.headerAdapter = object :
-    StickyHeaderDecoration.HeaderAdapter {
-    override fun onBindHeaderViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        holder.itemView.text.text = "HEADER " + position
-    }
+ val mediator = TabRecyclerMediator(recycler, tab_layout)
+        mediator.listener = object : TabRecyclerMediator.Listener {
+            override fun getRecyclerPositionForTab(tab: Int): Int {
+                return tab * 3
+            }
 
-    override fun onCreateHeaderViewHolder(
-        parent: ViewGroup,
-        viewType: Int
-    ): RecyclerView.ViewHolder {
-        // return view holder of the header for the particular type
-        val layout = when (viewType){
-            0 -> R.layout.example_header
-            1 -> R.layout.example_header2
-            2 -> R.layout.example_header3
-            else -> R.layout.example_header
+            override fun getTabForRecyclerPosition(pos: Int): Int {
+                return pos / 3
+            }
         }
-
-        val view = LayoutInflater.from(parent.context).inflate(layout, parent, false)
-        return Holder(view)
-    }
-
-    override fun getHeaderCount(): Int {
-      // return number of headers to insert
-      return 10
-    }
-
-    override fun getHeaderPosition(header: Int): Int {
-      // return insertion position of the nth header
-      return header * 3
-    }
-
-    override fun getHeaderType(header: Int): Int {
-        return header % 3;
-    }
-}
 ```
 
 # License
